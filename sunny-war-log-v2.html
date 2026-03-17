@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunny's Daily War Log</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --gold: #c9a84c;
+    --green: #55c47a;
+    --blue: #5598e0;
+    --purple: #a78bfa;
+    --red: #e05555;
+    --bg: #09090f;
+    --card: #111120;
+    --border: #ffffff12;
+    --text: #e8e4dc;
+    --muted: #ffffff50;
+  }
+  body { background: var(--bg); color: var(--text); font-family: Georgia, serif; min-height: 100vh; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f0a1a, #1a0f08);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-row1 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .header-label { font-size: 9px; letter-spacing: 4px; color: var(--gold); font-family: monospace; text-transform: uppercase; margin-bottom: 3px; }
+  .header h1 { font-size: 18px; font-weight: normal; color: #fff; }
+  .days-grid { display: flex; gap: 10px; }
+  .day-box { background: #ffffff08; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; text-align: center; }
+  .day-num { font-size: 20px; font-family: monospace; font-weight: bold; }
+  .day-label { font-size: 8px; color: var(--muted); font-family: monospace; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 18px; color: var(--gold); font-family: monospace; font-weight: bold; }
+  .stat-label { font-size: 8px; color: var(--muted); font-family: monospace; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* TABS */
+  .tabs { background: #0d0d18; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; }
+  .tab { background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--muted); padding: 12px 16px; cursor: pointer; font-size: 11px; font-family: monospace; letter-spacing: 1px; text-transform: uppercase; transition: all 0.2s; white-space: nowrap; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* FORM */
+  .form-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .form-title { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-family: monospace; text-transform: uppercase; margin-bottom: 14px; }
+  .form-date { background: #ffffff08; border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 13px; width: 100%; margin-bottom: 14px; }
+
+  /* GROUP LABELS */
+  .group-label { font-size: 9px; letter-spacing: 3px; font-family: monospace; text-transform: uppercase; padding: 6px 12px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
+  .g1-label { background: #5598e020; color: #5598e0; border: 1px solid #5598e030; }
+  .g2-label { background: #a78bfa20; color: #a78bfa; border: 1px solid #a78bfa30; }
+
+  .subjects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .subject-block { background: #ffffff05; border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+  .subject-block.g1 { border-left: 3px solid #5598e050; }
+  .subject-block.g2 { border-left: 3px solid #a78bfa50; }
+  .subject-name { font-size: 10px; letter-spacing: 1px; color: var(--muted); font-family: monospace; text-transform: uppercase; margin-bottom: 7px; }
+  .subject-name.g1 { color: #5598e0; }
+  .subject-name.g2 { color: #a78bfa; }
+  .subject-input { background: #ffffff08; border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 5px; font-size: 12px; width: 100%; font-family: Georgia, serif; resize: none; }
+  .subject-input:focus { outline: none; border-color: var(--gold); }
+  .hours-row { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+  .hours-label { font-size: 11px; color: var(--muted); font-family: monospace; }
+  .hours-input { background: #ffffff08; border: 1px solid var(--border); color: var(--gold); padding: 5px 8px; border-radius: 5px; font-size: 13px; width: 60px; font-family: monospace; text-align: center; }
+  .hours-input:focus { outline: none; border-color: var(--gold); }
+
+  /* SELF STUDY SECTION */
+  .self-study-card { background: #0a1a0a; border: 1px solid #55c47a25; border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  .self-study-title { font-size: 9px; letter-spacing: 3px; color: var(--green); font-family: monospace; text-transform: uppercase; margin-bottom: 14px; }
+  .self-subjects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .self-subject-block { background: #ffffff05; border: 1px solid #55c47a18; border-radius: 8px; padding: 12px; }
+  .self-subject-name { font-size: 10px; letter-spacing: 1px; color: var(--green); font-family: monospace; text-transform: uppercase; margin-bottom: 6px; opacity: 0.8; }
+  .self-type-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .self-type-btn { background: #ffffff08; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; border-radius: 20px; cursor: pointer; font-size: 11px; font-family: monospace; transition: all 0.15s; }
+  .self-type-btn.sel-read { background: #5598e025; border-color: #5598e060; color: #5598e0; }
+  .self-type-btn.sel-practice { background: #f97316twentyfive; background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.5); color: #f97316; }
+  .self-type-btn.sel-revision { background: rgba(167,139,250,0.15); border-color: rgba(167,139,250,0.5); color: #a78bfa; }
+  .self-hours-input { background: #ffffff08; border: 1px solid #55c47a30; color: var(--green); padding: 5px 8px; border-radius: 5px; font-size: 13px; width: 60px; font-family: monospace; text-align: center; }
+  .self-hours-input:focus { outline: none; border-color: var(--green); }
+  .self-note-input { background: #ffffff05; border: 1px solid #55c47a18; color: var(--text); padding: 6px 10px; border-radius: 5px; font-size: 12px; width: 100%; font-family: Georgia, serif; margin-top: 7px; resize: none; }
+  .self-note-input:focus { outline: none; border-color: var(--green); }
+
+  .section-label { font-size: 9px; letter-spacing: 2px; color: var(--muted); font-family: monospace; text-transform: uppercase; margin-bottom: 7px; margin-top: 2px; }
+  .full-textarea { background: #ffffff05; border: 1px solid var(--border); color: var(--text); padding: 11px 13px; border-radius: 8px; font-size: 13px; width: 100%; font-family: Georgia, serif; resize: vertical; min-height: 65px; margin-bottom: 12px; }
+  .full-textarea:focus { outline: none; border-color: var(--gold); }
+  .mood-row { display: flex; gap: 7px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mood-btn { background: #ffffff08; border: 1px solid var(--border); color: var(--muted); padding: 6px 13px; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .mood-btn.selected { background: var(--gold); border-color: var(--gold); color: #000; }
+  .submit-btn { width: 100%; background: var(--gold); border: none; color: #000; padding: 13px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: monospace; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; }
+
+  /* HISTORY */
+  .entries-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .entries-title { font-size: 10px; letter-spacing: 3px; color: var(--gold); font-family: monospace; text-transform: uppercase; }
+  .clear-btn { background: transparent; border: 1px solid #ef444430; color: #ef4444; padding: 5px 11px; border-radius: 5px; cursor: pointer; font-size: 10px; font-family: monospace; }
+  .entry-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 12px; }
+  .entry-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .entry-date { font-size: 11px; color: var(--gold); font-family: monospace; letter-spacing: 2px; }
+  .badges { display: flex; gap: 6px; align-items: center; }
+  .badge { font-family: monospace; font-size: 10px; font-weight: bold; padding: 3px 9px; border-radius: 20px; }
+  .badge-gold { background: var(--gold); color: #000; }
+  .badge-green { background: var(--green); color: #000; }
+  .entry-mood { font-size: 16px; }
+  .delete-btn { background: transparent; border: none; color: #ffffff20; cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+  .delete-btn:hover { color: #ef4444; }
+  .entry-subjects { margin-bottom: 10px; }
+  .entry-group-label { font-size: 8px; letter-spacing: 2px; font-family: monospace; text-transform: uppercase; margin-bottom: 5px; margin-top: 8px; }
+  .entry-subject { display: flex; gap: 10px; background: #ffffff05; border-radius: 6px; padding: 8px 11px; margin-bottom: 4px; align-items: flex-start; }
+  .esn { font-size: 10px; font-family: monospace; min-width: 110px; margin-top: 2px; }
+  .esd { font-size: 12.5px; color: #c0bdb5; line-height: 1.6; flex: 1; }
+  .esh { font-size: 10px; color: var(--muted); font-family: monospace; white-space: nowrap; margin-top: 2px; }
+  .self-entry-block { background: #0a1a0a; border: 1px solid #55c47a20; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .self-entry-title { font-size: 9px; letter-spacing: 2px; color: var(--green); font-family: monospace; text-transform: uppercase; margin-bottom: 8px; }
+  .self-entry-row { display: flex; gap: 8px; background: #ffffff05; border-radius: 5px; padding: 7px 10px; margin-bottom: 4px; align-items: flex-start; }
+  .self-entry-type { font-size: 10px; font-family: monospace; min-width: 90px; margin-top: 2px; }
+  .self-entry-detail { font-size: 12.5px; color: #c0bdb5; line-height: 1.6; flex: 1; }
+  .self-entry-hours { font-size: 10px; color: var(--green); font-family: monospace; white-space: nowrap; margin-top: 2px; }
+  .entry-section { margin-bottom: 8px; }
+  .esl { font-size: 9px; letter-spacing: 2px; color: var(--muted); font-family: monospace; text-transform: uppercase; margin-bottom: 3px; }
+  .est { font-size: 13px; color: #c0bdb5; line-height: 1.7; }
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty-text { font-size: 14px; margin-bottom: 4px; }
+  .empty-sub { font-size: 11px; font-family: monospace; color: #ffffff25; }
+
+  /* PROGRESS */
+  .progress-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .progress-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .progress-num { font-size: 26px; font-family: monospace; font-weight: bold; color: var(--gold); margin-bottom: 3px; }
+  .progress-desc { font-size: 10px; color: var(--muted); font-family: monospace; letter-spacing: 1px; }
+  .section-head { font-size: 9px; letter-spacing: 3px; color: var(--gold); font-family: monospace; text-transform: uppercase; margin-bottom: 12px; margin-top: 4px; }
+  .bar-row { margin-bottom: 11px; }
+  .bar-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .bar-name { font-size: 12px; color: var(--text); font-family: monospace; }
+  .bar-hrs { font-size: 12px; font-family: monospace; }
+  .bar-bg { height: 6px; background: #ffffff10; border-radius: 3px; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .self-study-prog { margin-bottom: 20px; background: #0a1a0a; border: 1px solid #55c47a20; border-radius: 10px; padding: 16px; }
+  .ss-section-head { font-size: 9px; letter-spacing: 3px; color: var(--green); font-family: monospace; text-transform: uppercase; margin-bottom: 12px; }
+  .type-bar-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .type-label { font-size: 11px; font-family: monospace; width: 90px; }
+  .type-bar-bg { flex: 1; height: 8px; background: #ffffff10; border-radius: 4px; }
+  .type-bar-fill { height: 100%; border-radius: 4px; }
+  .type-hrs { font-size: 11px; font-family: monospace; color: var(--green); width: 50px; text-align: right; }
+  .cal-section { margin-bottom: 20px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day { aspect-ratio: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: monospace; background: #ffffff08; color: var(--muted); }
+  .cal-day.has-lecture { background: rgba(85,152,224,0.4); color: #fff; }
+  .cal-day.has-self { background: rgba(85,196,122,0.4); color: #fff; }
+  .cal-day.has-both { background: var(--gold); color: #000; font-weight: bold; }
+  .cal-day.today { outline: 2px solid var(--gold); }
+  .cal-legend { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+  .cal-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; font-family: monospace; color: var(--muted); }
+  .cal-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--gold); color: #000; padding: 11px 18px; border-radius: 8px; font-family: monospace; font-size: 13px; font-weight: bold; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 999; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  @media(max-width:600px) { .subjects-grid,.self-subjects-grid { grid-template-columns: 1fr; } .progress-grid { grid-template-columns: 1fr 1fr; } .days-grid { gap: 6px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-row1">
+    <div>
+      <div class="header-label">Sunny's Daily War Log</div>
+      <h1>CA Inter — Jan 2027 Mission</h1>
+    </div>
+    <div class="days-grid">
+      <div class="day-box">
+        <div class="day-num" id="dSyllabus" style="color:#e8c97a">—</div>
+        <div class="day-label">Syllabus<br>Complete</div>
+      </div>
+      <div class="day-box">
+        <div class="day-num" id="dG1" style="color:#5598e0">—</div>
+        <div class="day-label">G1<br>Revision</div>
+      </div>
+      <div class="day-box">
+        <div class="day-num" id="dG2" style="color:#a78bfa">—</div>
+        <div class="day-label">G2<br>Revision</div>
+      </div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num" id="statDays">0</div><div class="stat-label">Days Logged</div></div>
+    <div class="stat"><div class="stat-num" id="statLec">0</div><div class="stat-label">Lecture Hrs</div></div>
+    <div class="stat"><div class="stat-num" id="statSelf">0</div><div class="stat-label">Self Study Hrs</div></div>
+    <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Total Hrs</div></div>
+    <div class="stat"><div class="stat-num" id="statStreak">0🔥</div><div class="stat-label">Streak</div></div>
+    <div class="stat"><div class="stat-num" id="statGoal">0%</div><div class="stat-label">1200hr Goal</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('log')">📝 Log Today</button>
+  <button class="tab" onclick="showTab('history')">📖 History</button>
+  <button class="tab" onclick="showTab('progress')">📊 Progress</button>
+</div>
+
+<div class="main">
+
+  <!-- LOG TAB -->
+  <div id="tab-log">
+    <div class="form-card">
+      <div class="form-title">📅 Lecture / Class Log — Teacher Ne Jo Padhaya</div>
+      <input type="date" class="form-date" id="logDate">
+
+      <div style="margin-bottom:8px"><span class="group-label g1-label">GROUP 1</span></div>
+      <div class="subjects-grid" style="margin-bottom:16px">
+        <div class="subject-block g1">
+          <div class="subject-name g1">Paper 1 — Advanced Accounting</div>
+          <textarea class="subject-input" id="s1" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h1" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g1">
+          <div class="subject-name g1">Paper 2 — Corporate & Other Laws</div>
+          <textarea class="subject-input" id="s2" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h2" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g1">
+          <div class="subject-name g1">Paper 3 — Taxation (Income Tax)</div>
+          <textarea class="subject-input" id="s3" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h3" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g1">
+          <div class="subject-name g1">Paper 3 — Taxation (GST / IDT)</div>
+          <textarea class="subject-input" id="s4" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h4" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px"><span class="group-label g2-label">GROUP 2</span></div>
+      <div class="subjects-grid" style="margin-bottom:16px">
+        <div class="subject-block g2">
+          <div class="subject-name g2">Paper 4 — Cost & Management Accounting</div>
+          <textarea class="subject-input" id="s5" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h5" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g2">
+          <div class="subject-name g2">Paper 5 — Auditing & Ethics</div>
+          <textarea class="subject-input" id="s6" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h6" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g2">
+          <div class="subject-name g2">Paper 6 — Financial Management</div>
+          <textarea class="subject-input" id="s7" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h7" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+        <div class="subject-block g2">
+          <div class="subject-name g2">Paper 6 — Strategic Management</div>
+          <textarea class="subject-input" id="s8" rows="2" placeholder="Chapter / topic covered..."></textarea>
+          <div class="hours-row"><span class="hours-label">Hours:</span><input type="number" class="hours-input" id="h8" min="0" max="12" step="0.5" value="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SELF STUDY CARD -->
+    <div class="self-study-card">
+      <div class="self-study-title">🟢 Self Study Log — Khud Se Kiya (Lecture Nahi)</div>
+
+      <div style="margin-bottom:8px"><span class="group-label g1-label">GROUP 1 — Self Study</span></div>
+      <div class="self-subjects-grid" style="margin-bottom:14px">
+        <div class="self-subject-block">
+          <div class="self-subject-name">Adv. Accounting</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss1" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn1" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">Corporate & Other Laws</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss2" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn2" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">Income Tax</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss3" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn3" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">GST / IDT</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss4" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn4" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+      </div>
+
+      <div style="margin-bottom:8px"><span class="group-label g2-label">GROUP 2 — Self Study</span></div>
+      <div class="self-subjects-grid">
+        <div class="self-subject-block">
+          <div class="self-subject-name">Cost & Mgmt Accounting</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss5" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn5" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">Auditing & Ethics</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss6" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn6" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">Financial Management</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss7" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn7" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+        <div class="self-subject-block">
+          <div class="self-subject-name">Strategic Management</div>
+          <div class="self-type-row">
+            <button class="self-type-btn" onclick="toggleType(this,'read')">📖 Read</button>
+            <button class="self-type-btn" onclick="toggleType(this,'practice')">✏️ Practice</button>
+            <button class="self-type-btn" onclick="toggleType(this,'revision')">🔄 Revision</button>
+          </div>
+          <div class="hours-row"><span class="hours-label" style="color:#55c47a">Self Hrs:</span><input type="number" class="self-hours-input" id="ss8" min="0" max="12" step="0.5" value="0"></div>
+          <textarea class="self-note-input" id="sn8" rows="2" placeholder="Kya kiya? Questions/pages..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <div class="section-label">✅ Aaj Ki 3 Badi Jeetein</div>
+      <textarea class="full-textarea" id="wins" placeholder="1. &#10;2. &#10;3. "></textarea>
+      <div class="section-label">⚠️ Kya Struggle Hua? (Honest)</div>
+      <textarea class="full-textarea" id="struggles" placeholder="Jo topics samajh nahi aaye, jo distract kiya..."></textarea>
+      <div class="section-label">🎯 Kal Ka Plan</div>
+      <textarea class="full-textarea" id="tmrPlan" placeholder="Kal kya karoge? Subject, chapter, time..."></textarea>
+      <div class="section-label">😊 Aaj Ka Mood</div>
+      <div class="mood-row">
+        <button class="mood-btn" onclick="selectMood(this,'🔥')">🔥 On Fire</button>
+        <button class="mood-btn" onclick="selectMood(this,'💪')">💪 Strong</button>
+        <button class="mood-btn" onclick="selectMood(this,'😐')">😐 Okay</button>
+        <button class="mood-btn" onclick="selectMood(this,'😓')">😓 Struggled</button>
+        <button class="mood-btn" onclick="selectMood(this,'😤')">😤 Frustrated</button>
+      </div>
+      <button class="submit-btn" onclick="saveEntry()">⚡ Save Today's Log</button>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" style="display:none">
+    <div class="entries-header">
+      <div class="entries-title">📖 War Log History</div>
+      <button class="clear-btn" onclick="clearAll()">Clear All</button>
+    </div>
+    <div id="entriesList"></div>
+  </div>
+
+  <!-- PROGRESS TAB -->
+  <div id="tab-progress" style="display:none">
+    <div class="progress-grid" id="progressGrid"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div class="section-head">📚 Lecture Hours Per Subject</div>
+      <div id="subjectBars"></div>
+    </div>
+    <div class="self-study-prog">
+      <div class="ss-section-head">🟢 Self Study Breakdown</div>
+      <div id="selfBars"></div>
+      <div style="margin-top:14px">
+        <div class="ss-section-head" style="margin-bottom:10px">By Activity Type</div>
+        <div class="type-bar-row"><span class="type-label" style="color:#5598e0">📖 Reading</span><div class="type-bar-bg"><div class="type-bar-fill" id="readBar" style="background:#5598e0;width:0%"></div></div><span class="type-hrs" id="readHrs">0h</span></div>
+        <div class="type-bar-row"><span class="type-label" style="color:#f97316">✏️ Practice</span><div class="type-bar-bg"><div class="type-bar-fill" id="practiceBar" style="background:#f97316;width:0%"></div></div><span class="type-hrs" id="practiceHrs">0h</span></div>
+        <div class="type-bar-row"><span class="type-label" style="color:#a78bfa">🔄 Revision</span><div class="type-bar-bg"><div class="type-bar-fill" id="revisionBar" style="background:#a78bfa;width:0%"></div></div><span class="type-hrs" id="revisionHrs">0h</span></div>
+      </div>
+    </div>
+    <div class="cal-section">
+      <div class="section-head">📅 Study Calendar (Last 35 Days)</div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend" style="margin-top:10px">
+        <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(85,152,224,0.4)"></div>Lecture only</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:rgba(85,196,122,0.4)"></div>Self only</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:var(--gold)"></div>Both ✓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const LECTURE_SUBJECTS = [
+  {id:"s1",hid:"h1",name:"Advanced Accounting",group:1,color:"#5598e0"},
+  {id:"s2",hid:"h2",name:"Corporate & Other Laws",group:1,color:"#5598e0"},
+  {id:"s3",hid:"h3",name:"Income Tax",group:1,color:"#5598e0"},
+  {id:"s4",hid:"h4",name:"GST / IDT",group:1,color:"#5598e0"},
+  {id:"s5",hid:"h5",name:"Cost & Mgmt Accounting",group:2,color:"#a78bfa"},
+  {id:"s6",hid:"h6",name:"Auditing & Ethics",group:2,color:"#a78bfa"},
+  {id:"s7",hid:"h7",name:"Financial Management",group:2,color:"#a78bfa"},
+  {id:"s8",hid:"h8",name:"Strategic Management",group:2,color:"#a78bfa"}
+];
+const SELF_SUBJECTS = [
+  {id:"ss1",nid:"sn1",name:"Advanced Accounting",group:1},
+  {id:"ss2",nid:"sn2",name:"Corporate & Other Laws",group:1},
+  {id:"ss3",nid:"sn3",name:"Income Tax",group:1},
+  {id:"ss4",nid:"sn4",name:"GST / IDT",group:1},
+  {id:"ss5",nid:"sn5",name:"Cost & Mgmt Accounting",group:2},
+  {id:"ss6",nid:"sn6",name:"Auditing & Ethics",group:2},
+  {id:"ss7",nid:"sn7",name:"Financial Management",group:2},
+  {id:"ss8",nid:"sn8",name:"Strategic Management",group:2}
+];
+
+let entries = JSON.parse(localStorage.getItem("sunnyWarLog2") || "[]");
+let selectedMood = "";
+let selfTypes = {}; // key: ss1_read, ss1_practice etc
+
+document.getElementById("logDate").value = new Date().toISOString().split("T")[0];
+
+// Days counters
+function updateDays() {
+  const today = new Date();
+  const syllabus = new Date(today); syllabus.setDate(today.getDate()+200);
+  const g1 = new Date(today); g1.setDate(today.getDate()+290);
+  const g2 = new Date(today); g2.setDate(today.getDate()+390);
+  document.getElementById("dSyllabus").textContent = 200;
+  document.getElementById("dG1").textContent = 90;
+  document.getElementById("dG2").textContent = 100;
+}
+updateDays();
+
+function toggleType(btn, type) {
+  const block = btn.closest(".self-subject-block");
+  const ssId = block.querySelector(".self-hours-input").id;
+  const key = ssId + "_" + type;
+  const clsMap = {read:"sel-read", practice:"sel-practice", revision:"sel-revision"};
+  if(selfTypes[key]) {
+    delete selfTypes[key];
+    btn.className = "self-type-btn";
+  } else {
+    selfTypes[key] = true;
+    btn.classList.add(clsMap[type]);
+  }
+}
+
+function selectMood(btn, mood) {
+  document.querySelectorAll(".mood-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedMood = mood;
+}
+
+function showTab(t) {
+  ["log","history","progress"].forEach(id => {
+    document.getElementById("tab-"+id).style.display = id===t?"block":"none";
+  });
+  document.querySelectorAll(".tab").forEach((tab,i) => {
+    tab.classList.toggle("active", ["log","history","progress"][i]===t);
+  });
+  if(t==="history") renderHistory();
+  if(t==="progress") renderProgress();
+}
+
+function saveEntry() {
+  const date = document.getElementById("logDate").value;
+  if(!date) { showToast("Date select karo!"); return; }
+
+  const lectures = LECTURE_SUBJECTS.map(s => ({
+    name: s.name, group: s.group, color: s.color,
+    detail: document.getElementById(s.id).value.trim(),
+    hours: parseFloat(document.getElementById(s.hid).value)||0
+  })).filter(s => s.detail || s.hours>0);
+
+  const selfStudy = SELF_SUBJECTS.map(s => {
+    const hrs = parseFloat(document.getElementById(s.id).value)||0;
+    const note = document.getElementById(s.nid).value.trim();
+    const types = [];
+    if(selfTypes[s.id+"_read"]) types.push("📖 Reading");
+    if(selfTypes[s.id+"_practice"]) types.push("✏️ Practice");
+    if(selfTypes[s.id+"_revision"]) types.push("🔄 Revision");
+    return { name: s.name, group: s.group, hours: hrs, note, types };
+  }).filter(s => s.hours>0 || s.note || s.types.length>0);
+
+  const lecHrs = lectures.reduce((a,s)=>a+s.hours,0);
+  const selfHrs = selfStudy.reduce((a,s)=>a+s.hours,0);
+
+  const entry = {
+    id: Date.now(), date,
+    lectures, selfStudy,
+    lecHrs, selfHrs,
+    totalHours: lecHrs + selfHrs,
+    wins: document.getElementById("wins").value.trim(),
+    struggles: document.getElementById("struggles").value.trim(),
+    tmrPlan: document.getElementById("tmrPlan").value.trim(),
+    mood: selectedMood || "😐",
+    selfTypeSummary: Object.keys(selfTypes).reduce((a,k)=>{
+      const type = k.split("_")[1];
+      a[type] = (a[type]||0)+1; return a;
+    }, {})
+  };
+
+  entries = entries.filter(e=>e.date!==date);
+  entries.unshift(entry);
+  entries.sort((a,b)=>b.date.localeCompare(a.date));
+  localStorage.setItem("sunnyWarLog2", JSON.stringify(entries));
+
+  // Reset
+  LECTURE_SUBJECTS.forEach(s=>{document.getElementById(s.id).value="";document.getElementById(s.hid).value=0;});
+  SELF_SUBJECTS.forEach(s=>{document.getElementById(s.id).value=0;document.getElementById(s.nid).value="";});
+  document.querySelectorAll(".self-type-btn").forEach(b=>b.className="self-type-btn");
+  selfTypes={};
+  ["wins","struggles","tmrPlan"].forEach(id=>document.getElementById(id).value="");
+  document.querySelectorAll(".mood-btn").forEach(b=>b.classList.remove("selected"));
+  selectedMood="";
+
+  updateStats();
+  showToast("✅ Logged! " + entry.totalHours.toFixed(1) + " hrs (📚" + lecHrs.toFixed(1) + " + 🟢" + selfHrs.toFixed(1) + ") 💪");
+}
+
+function updateStats() {
+  const totalDays = entries.length;
+  const totalLec = entries.reduce((a,e)=>a+e.lecHrs,0);
+  const totalSelf = entries.reduce((a,e)=>a+e.selfHrs,0);
+  const total = totalLec + totalSelf;
+  document.getElementById("statDays").textContent = totalDays;
+  document.getElementById("statLec").textContent = totalLec.toFixed(1);
+  document.getElementById("statSelf").textContent = totalSelf.toFixed(1);
+  document.getElementById("statTotal").textContent = total.toFixed(1);
+  document.getElementById("statGoal").textContent = Math.min(100,Math.round(total/1200*100)) + "%";
+
+  let streak=0;
+  const today=new Date().toISOString().split("T")[0];
+  const dates=entries.map(e=>e.date).sort((a,b)=>b.localeCompare(a));
+  for(let i=0;i<dates.length;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    if(dates[i]===d.toISOString().split("T")[0]) streak++;
+    else break;
+  }
+  document.getElementById("statStreak").textContent = streak+"🔥";
+}
+
+function renderHistory() {
+  const list = document.getElementById("entriesList");
+  if(!entries.length){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">Abhi tak koi entry nahi</div><div class="empty-sub">Log tab pe jaao aur aaj ka din add karo</div></div>`;
+    return;
+  }
+  list.innerHTML = entries.map(e=>`
+    <div class="entry-card">
+      <div class="entry-top">
+        <div class="entry-date">${formatDate(e.date)}</div>
+        <div class="badges">
+          <span class="badge badge-gold">📚 ${e.lecHrs}h</span>
+          <span class="badge badge-green">🟢 ${e.selfHrs}h</span>
+          <span class="entry-mood">${e.mood}</span>
+          <button class="delete-btn" onclick="deleteEntry(${e.id})">✕</button>
+        </div>
+      </div>
+      ${e.lectures&&e.lectures.length?`
+      <div class="entry-subjects">
+        <div class="entry-group-label" style="color:#5598e0">📚 Lecture — Group 1</div>
+        ${e.lectures.filter(s=>s.group===1).map(s=>`
+          <div class="entry-subject">
+            <div class="esn" style="color:#5598e0">${s.name}</div>
+            <div class="esd">${s.detail||"—"}</div>
+            ${s.hours?`<div class="esh">${s.hours}h</div>`:""}
+          </div>`).join("")}
+        <div class="entry-group-label" style="color:#a78bfa;margin-top:8px">📚 Lecture — Group 2</div>
+        ${e.lectures.filter(s=>s.group===2).map(s=>`
+          <div class="entry-subject">
+            <div class="esn" style="color:#a78bfa">${s.name}</div>
+            <div class="esd">${s.detail||"—"}</div>
+            ${s.hours?`<div class="esh">${s.hours}h</div>`:""}
+          </div>`).join("")}
+      </div>`:``}
+      ${e.selfStudy&&e.selfStudy.length?`
+      <div class="self-entry-block">
+        <div class="self-entry-title">🟢 Self Study</div>
+        ${e.selfStudy.map(s=>`
+          <div class="self-entry-row">
+            <div class="self-entry-type" style="color:#55c47a">${s.name}</div>
+            <div class="self-entry-detail">
+              ${s.types&&s.types.length?`<span style="font-size:11px;color:#a0a0a0;font-family:monospace">${s.types.join(" · ")}</span><br>`:""}
+              ${s.note||""}
+            </div>
+            ${s.hours?`<div class="self-entry-hours">${s.hours}h</div>`:""}
+          </div>`).join("")}
+      </div>`:``}
+      ${e.wins?`<div class="entry-section"><div class="esl">✅ Wins</div><div class="est">${e.wins}</div></div>`:""}
+      ${e.struggles?`<div class="entry-section"><div class="esl">⚠️ Struggles</div><div class="est">${e.struggles}</div></div>`:""}
+      ${e.tmrPlan?`<div class="entry-section"><div class="esl">🎯 Kal Ka Plan</div><div class="est">${e.tmrPlan}</div></div>`:""}
+    </div>`).join("");
+}
+
+function renderProgress() {
+  const total = entries.reduce((a,e)=>a+(e.totalHours||0),0);
+  const totalLec = entries.reduce((a,e)=>a+(e.lecHrs||0),0);
+  const totalSelf = entries.reduce((a,e)=>a+(e.selfHrs||0),0);
+  const avg = entries.length?(total/entries.length).toFixed(1):0;
+  const best = entries.length?Math.max(...entries.map(e=>e.totalHours||0)):0;
+
+  document.getElementById("progressGrid").innerHTML=`
+    <div class="progress-card"><div class="progress-num">${entries.length}</div><div class="progress-desc">Days Logged</div></div>
+    <div class="progress-card"><div class="progress-num">${totalLec.toFixed(0)}</div><div class="progress-desc">Lecture Hours</div></div>
+    <div class="progress-card"><div class="progress-num">${totalSelf.toFixed(0)}</div><div class="progress-desc">Self Study Hrs</div></div>
+    <div class="progress-card"><div class="progress-num">${total.toFixed(0)}</div><div class="progress-desc">Total Hours</div></div>
+    <div class="progress-card"><div class="progress-num">${avg}</div><div class="progress-desc">Avg / Day</div></div>
+    <div class="progress-card"><div class="progress-num" style="color:${total>=1200?'#55c47a':'var(--gold)'}">${Math.min(100,Math.round(total/1200*100))}%</div><div class="progress-desc">1200hr Goal</div></div>
+  `;
+
+  // Lecture subject bars
+  const lh={};
+  LECTURE_SUBJECTS.forEach(s=>lh[s.name]=0);
+  entries.forEach(e=>(e.lectures||[]).forEach(s=>{if(lh[s.name]!==undefined)lh[s.name]+=s.hours;}));
+  const maxLh=Math.max(...Object.values(lh),1);
+  document.getElementById("subjectBars").innerHTML=LECTURE_SUBJECTS.map(s=>`
+    <div class="bar-row">
+      <div class="bar-top">
+        <span class="bar-name" style="color:${s.group===1?'#5598e0':'#a78bfa'}">${s.name}</span>
+        <span class="bar-hrs" style="color:${s.group===1?'#5598e0':'#a78bfa'}">${lh[s.name].toFixed(1)}h</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${lh[s.name]/maxLh*100}%;background:${s.group===1?'#5598e0':'#a78bfa'}"></div></div>
+    </div>`).join("");
+
+  // Self study bars
+  const sh={};
+  SELF_SUBJECTS.forEach(s=>sh[s.name]=0);
+  entries.forEach(e=>(e.selfStudy||[]).forEach(s=>{if(sh[s.name]!==undefined)sh[s.name]+=s.hours;}));
+  const maxSh=Math.max(...Object.values(sh),1);
+  document.getElementById("selfBars").innerHTML=SELF_SUBJECTS.map(s=>`
+    <div class="bar-row">
+      <div class="bar-top">
+        <span class="bar-name" style="color:#55c47a">${s.name}</span>
+        <span class="bar-hrs" style="color:#55c47a">${sh[s.name].toFixed(1)}h</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${sh[s.name]/maxSh*100}%;background:#55c47a"></div></div>
+    </div>`).join("");
+
+  // Type bars
+  let readH=0,practiceH=0,revisionH=0;
+  entries.forEach(e=>(e.selfStudy||[]).forEach(s=>{
+    if(s.types){
+      s.types.forEach(t=>{
+        if(t.includes("Read")) readH+=s.hours/Math.max(s.types.length,1);
+        if(t.includes("Practice")) practiceH+=s.hours/Math.max(s.types.length,1);
+        if(t.includes("Revision")) revisionH+=s.hours/Math.max(s.types.length,1);
+      });
+    }
+  }));
+  const maxT=Math.max(readH,practiceH,revisionH,1);
+  document.getElementById("readBar").style.width=readH/maxT*100+"%";
+  document.getElementById("practiceBar").style.width=practiceH/maxT*100+"%";
+  document.getElementById("revisionBar").style.width=revisionH/maxT*100+"%";
+  document.getElementById("readHrs").textContent=readH.toFixed(1)+"h";
+  document.getElementById("practiceHrs").textContent=practiceH.toFixed(1)+"h";
+  document.getElementById("revisionHrs").textContent=revisionH.toFixed(1)+"h";
+
+  // Calendar
+  const today=new Date();
+  const entryDates={};
+  entries.forEach(e=>entryDates[e.date]={lec:e.lecHrs>0,self:e.selfHrs>0});
+  const calHTML=[];
+  for(let i=34;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const ds=d.toISOString().split("T")[0];
+    const isToday=i===0;
+    const info=entryDates[ds];
+    let cls="cal-day";
+    if(info){
+      if(info.lec&&info.self) cls+=" has-both";
+      else if(info.lec) cls+=" has-lecture";
+      else if(info.self) cls+=" has-self";
+    }
+    if(isToday) cls+=" today";
+    calHTML.push(`<div class="${cls}" title="${ds}">${d.getDate()}</div>`);
+  }
+  document.getElementById("calGrid").innerHTML=calHTML.join("");
+}
+
+function deleteEntry(id){
+  if(!confirm("Yeh entry delete karni hai?")) return;
+  entries=entries.filter(e=>e.id!==id);
+  localStorage.setItem("sunnyWarLog2",JSON.stringify(entries));
+  updateStats(); renderHistory();
+}
+function clearAll(){
+  if(!confirm("Saari entries delete karni hain?")) return;
+  entries=[]; localStorage.setItem("sunnyWarLog2","[]");
+  updateStats(); renderHistory();
+}
+function formatDate(ds){
+  const d=new Date(ds+"T00:00:00");
+  return d.toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+}
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),3500);
+}
+updateStats();
+</script>
+</body>
+</html>
